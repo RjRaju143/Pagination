@@ -1,10 +1,8 @@
 import { Model } from "mongoose";
 import { Request, Response, NextFunction } from "express";
-
 interface CustomResponse extends Response {
   paginatedResults?: any;
 }
-
 function paginatedResults(model: Model<any>) {
   return async (req: Request, res: CustomResponse, next: NextFunction) => {
     const page = parseInt(req.query.page as string) || 1;
@@ -12,25 +10,21 @@ function paginatedResults(model: Model<any>) {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const results: any = {};
-
     try {
       const totalDocuments = await model.countDocuments();
       results.total = totalDocuments;
-
       if (endIndex < totalDocuments) {
         results.next = {
           page: page + 1,
           limit: limit,
         };
       }
-
       if (startIndex > 0) {
         results.previous = {
           page: page - 1,
           limit: limit,
         };
       }
-
       results.results = await model.find().limit(limit).skip(startIndex);
       res.paginatedResults = results;
       next();
@@ -39,5 +33,4 @@ function paginatedResults(model: Model<any>) {
     }
   };
 }
-
 export default paginatedResults;
